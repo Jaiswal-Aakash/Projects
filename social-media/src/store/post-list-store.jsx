@@ -1,16 +1,21 @@
-import { useReducer } from "react";
+import { useCallback, useReducer } from "react";
 import { createContext } from "react";
 
 export const PostList = createContext({
   postList: [],
   addPost: () => {},
+  addInitialPosts: () => {},
   deletePost: () => {},
 });
 
 const postListReducer = (currPostList, action) => {
   let newPostList = currPostList;
-  if(action.type === "DELETE_POST"){
-    newPostList = currPostList.filter(post => post.id !== action.payload.postId);
+  if (action.type === "DELETE_POST") {
+    newPostList = currPostList.filter(
+      (post) => post.id !== action.payload.postId
+    );
+  } else if (action.type === "ADD_INITIAL_POSTS") {
+    newPostList = action.payload.posts;
   } else if (action.type === "ADD_POST") {
     newPostList = [action.payload, ...currPostList];
   }
@@ -18,10 +23,8 @@ const postListReducer = (currPostList, action) => {
 };
 
 const PostListProvider = ({ children }) => {
-  const [postList, dispatchPostList] = useReducer(
-    postListReducer,
-    DEFAULT_POST_LIST
-  );
+  const [postList, dispatchPostList] = useReducer(postListReducer, []);
+
   const addPost = (userId, postTitle, postBody, reactions, tags) => {
     dispatchPostList({
       type: "ADD_POST",
@@ -35,36 +38,34 @@ const PostListProvider = ({ children }) => {
       },
     });
   };
-  const deletePost = (postId) => {
+
+  const addInitialPosts = (posts) => {
     dispatchPostList({
-      type: "DELETE_POST",
+      type: "ADD_INITIAL_POSTS",
       payload: {
-        postId,
+        posts,
       },
     });
   };
+
+  const deletePost = useCallback(
+    (postId) => {
+      dispatchPostList({
+        type: "DELETE_POST",
+        payload: {
+          postId,
+        },
+      });
+    },
+    [dispatchPostList]
+  );
   return (
-    <PostList.Provider value={{ postList, addPost, deletePost }}>
+    <PostList.Provider
+      value={{ postList, addPost, addInitialPosts, deletePost }}
+    >
       {children}
     </PostList.Provider>
   );
 };
-const DEFAULT_POST_LIST = [
-  {
-    id: "1",
-    title: "Going to Bengaluru",
-    body: "Lorem ipsum dolor sit amet consectetur adipisicing.",
-    reaction: 2,
-    userId: "user-9",
-    tags: ["vacation", "Bengaluru", "Enjoying"],
-  },
-  {
-    id: "2",
-    title: "Going to Bengaluru",
-    body: "Lorem ipsum dolor sit amet consectetur adipisicing.",
-    reaction: 16,
-    userId: "user-12",
-    tags: ["Graduating", "pass", "Enjoying"],
-  },
-];
+
 export default PostListProvider;

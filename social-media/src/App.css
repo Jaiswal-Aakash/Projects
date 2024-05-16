@@ -1,6 +1,5 @@
 .app-container {
     display: flex;
-
 }
 
 .content {
@@ -31,4 +30,11 @@
 
 .responsive {
     max-width: 30rem;
+}
+
+.welcome-message{
+    margin: 100px 0 50px 0;
+}
+.spinner{
+    margin: 20% 0;
 }
